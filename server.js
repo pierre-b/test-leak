@@ -93,7 +93,10 @@ server.route({
     handler: function(req, reply) {
       console.log('test via gcloud');
 
-      var pubsub = gcloud({projectId: 'notifuse', keyFilename: config.gcloudKeyPath}).pubsub();
+      var pubsub = gcloud({
+        projectId: config.gcloudProject, 
+        keyFilename: config.gcloudKeyPath
+      }).pubsub();
 
       // add agent for maxSockets
       pubsub.interceptors.push({
@@ -104,7 +107,7 @@ server.route({
         }
       });
 
-      var topic = pubsub.topic('test'),
+      var topic = pubsub.topic(config.topic),
           calls = [],
           count = 0;
 
