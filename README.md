@@ -7,3 +7,7 @@ To test via the request package
 To test via the gcloud sdk
 
 /gcloud
+
+To test via wreck (actually the best)
+
+/wreck
