@@ -56,7 +56,7 @@ server.route({
         for(var i = 0; i<100; i++) {
           calls.push(function(callback){
 
-            var httpRequest = wreck.post('https://pubsub.googleapis.com/v1/projects/notifuse/topics/test:publish', options, function(error, response, payload){
+            var httpRequest = wreck.post('https://pubsub.googleapis.com/v1/projects/'+config.gcloudProject+'/topics/'+config.topic+':publish', options, function(error, response, payload){
               if(error) return callback(error);
 
               count = count+1;
@@ -103,10 +103,7 @@ server.route({
       });
 
       // get token
-      auth.authorizeRequest({
-        method: 'post',
-        uri: 'https://pubsub.googleapis.com/v1/projects/notifuse/topics/test:publish'
-      }, function (err, authorizedReqOpts) {
+      auth.getToken(function (err, token) {
         if(err) reply(err);
         // console.log(authorizedReqOpts);
 
@@ -117,8 +114,8 @@ server.route({
         var requestOptions = {
           agent: agent,
           method: 'POST',
-          url: 'https://pubsub.googleapis.com/v1/projects/notifuse/topics/test:publish',
-          headers: authorizedReqOpts.headers,
+          url: 'https://pubsub.googleapis.com/v1/projects/'+config.gcloudProject+'/topics/'+config.topic+':publish',
+          headers: {Authorization: 'Bearer '+token},
           json: {
             messages: [{data: data.toString('base64')}]
           },
