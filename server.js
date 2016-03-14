@@ -16,6 +16,76 @@ var agent = new https.Agent({
 var message = {foo: "bar"};
 
 server.route({
+  path: '/wreck',
+  method: 'GET',
+  config: {
+    auth: false, 
+    handler: function(req, reply) {
+      console.log('test via wreck');
+
+      var wreck = require('wreck');
+      wreck.agents.https.maxSockets = 100;
+
+      // Create a client
+      var auth = googleAuth({
+        keyFilename: config.gcloudKeyPath,
+        scopes: [
+            'https://www.googleapis.com/auth/pubsub',
+            'https://www.googleapis.com/auth/cloud-platform'
+          ]
+      });
+
+      // get token
+      auth.getToken(function (err, token) {
+        if(err) reply(err);
+        // console.log(authorizedReqOpts);
+
+        var data = new Buffer(JSON.stringify(message)),
+            calls = [],
+            count = 0;
+
+        var options = {
+          headers: {Authorization: 'Bearer '+token},
+          payload: JSON.stringify({messages: [{data: data.toString('base64')}]}),
+          timeout: 10000
+        };
+
+        // console.log('options', options);
+
+        // prepare calls for parallel
+        for(var i = 0; i<100; i++) {
+          calls.push(function(callback){
+
+            var httpRequest = wreck.post('https://pubsub.googleapis.com/v1/projects/notifuse/topics/test:publish', options, function(error, response, payload){
+              if(error) return callback(error);
+
+              count = count+1;
+
+              var body = payload.toString('utf-8'),
+                  json = JSON.parse(body);
+
+              if(json.error) return callback(null, json.error.message);
+
+              callback(null, json.messageIds[0]);
+            });
+          });
+        }
+
+        async.parallel(calls,
+          function(error, results){
+            if(error) return reply(error);
+          
+            console.log('processed', count);
+            // agent.destroy();
+            reply(results);
+          }
+        );
+      });
+    }
+  }
+});
+
+server.route({
   path: '/request',
   method: 'GET',
   config: {

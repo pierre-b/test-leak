@@ -11,6 +11,7 @@
     "gcloud": "^0.29.0",
     "google-auto-auth": "^0.2.4",
     "hapi": "^11.1.2",
-    "request": "^2.69.0"
+    "request": "^2.69.0",
+    "wreck": "^7.0.2"
   }
 }
