@@ -1,4 +1,9 @@
-var request = require('request');
+var request = require('request').defaults({
+  timeout: 60000,
+  pool: {
+    maxSockets: Infinity
+  }
+});
 var googleAuth = require('google-auto-auth');
 var config = require('./config.js');
 var Hapi = require('hapi');
@@ -9,9 +14,9 @@ var async = require('async');
 var server = new Hapi.Server();
 server.connection({ port: process.env.PORT || config.port });
 
-var agent = new https.Agent({
-  maxSockets: 100
-});
+// var agent = new https.Agent({
+//   maxSockets: 100
+// });
 
 var message = {foo: "bar"};
 
@@ -112,7 +117,7 @@ server.route({
             count = 0;
 
         var requestOptions = {
-          agent: agent,
+          // agent: agent,
           method: 'POST',
           url: 'https://pubsub.googleapis.com/v1/projects/'+config.gcloudProject+'/topics/'+config.topic+':publish',
           headers: {Authorization: 'Bearer '+token},
